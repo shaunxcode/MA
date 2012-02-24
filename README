@@ -4,7 +4,11 @@ The types are number(int, float), (bool #t #f), func, list, dict, string.
 
 Each type has the ability to be treated as a function inside of apply. 
 
-e.g. 
+symbol:
+
+(a 5) => sets unbound a to 5, or set!s a to 5 if bound
+
+bool:
 
 (#t "it was true" "it was false") => "it was true"
 
@@ -67,8 +71,6 @@ operators are also supported when dealing with primitive applications
 
 Special forms:
 
-define - bind a free variable to a value
-set! - mutate a variable
 eq? - are two forms equivelant (eq? (quote x) (quote x)) => #t
 lambda - create a function to be applied (lambda (x) (+ x x)) 
 cons - return a new list containing a new head (cons 1 '(2 3)) => (1 2 3)
@@ -90,7 +92,10 @@ defop - an operator macro passes in the left and right hand sides providing an o
 
 (defop ":" (lambda (lhs rhs) `(,@(lhs 0 -2) (key-value-pair ,(lhs -1) ,(rhs 0)) ,@(rhs 1 -1))))
 
-basic runtime
+basic runtime for scheme esque language
+(defmacro define (lambda (x y) `(,x ,y)))
+(defmacro set! (lambda x y) `(,x ,y))
+
 (define car (lambda (x) (x 0)))
 (define cdr (lambda (x) (x 1 -1)))
 (define not (lambda (x) (x #f #t))) 
