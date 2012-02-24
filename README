@@ -1,1 +1,66 @@
 MA is a minimal type based dialect of lisp which aims to require as few special forms as possible to facilitate the bootstrapping of larger and more robust lisps upon it.
+
+The types are number(int, float), (bool #t #f), func, list, dict, string.
+
+Each type has the ability to be treated as a function inside of apply. 
+
+e.g. 
+
+(#t "it was true" "it was false") => "it was true"
+
+This means even cond and if would merely be implemented in terms of bool application. 
+
+(cond (a "yep a") 
+      (b "yep b") 
+      (c "yep c") 
+      (#t "something else"))
+
+Would expand to:
+
+((bool a) "yep a" ((bool b) "yep b" ((bool c) "yep c" "something else")))
+
+
+when a list or string is applied with one arg it returns the index of there of e.g.
+
+('(a b c) 1) => b
+
+This means car could be defined as (define car (lambda (l) (l 0))) 
+
+When a list is applied with two args it returns a range e.g.
+
+('(a b c) 1 2) => (b c)
+
+Both one and two arity calls to a list accept negative numbers e.g. 
+
+('(a b c) -1) => -1
+('(a b c) 1 -1) => (b c)
+
+This means cdr would be deifned as (define cdr (lambda (l) (l 1 -1)))
+
+For completeness 
+("this is a string" 2 5) => "is i"
+
+
+Numbers (int and float) when treated as a function passed other numbers work arithmetically e.g.
+
+(5 5) => 25
+
+(5 5 5) => 125
+
+(define x 5)
+
+(5 (5 x)) => 125
+
+Partial application of functions result in lambdas partials e.g.
+
+(+ 5) => (lambda (y) (+ 5 y))
+
+operators are also supported when dealing with primitive applications
+
+(5 + 5) => 10
+
+(5 + 5 5) => 50
+
+(define add-5 (5 +))
+(add-5 5) => 10
+
