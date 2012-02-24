@@ -1,0 +1,1 @@
+MA is a minimal type based dialect of lisp which aims to require as few special forms as possible to facilitate the bootstrapping of larger and more robust lisps upon it.
