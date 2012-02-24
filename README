@@ -20,20 +20,20 @@ Would expand to:
 ((bool a) "yep a" ((bool b) "yep b" ((bool c) "yep c" "something else")))
 
 
-when a list or string is applied with one arg it returns the index of there of e.g.
+when a list or string is applied with one arg it returns the index there of e.g.
 
-('(a b c) 1) => b
+((quote (a b c)) 1) => b
 
 This means car could be defined as (define car (lambda (l) (l 0))) 
 
 When a list is applied with two args it returns a range e.g.
 
-('(a b c) 1 2) => (b c)
+((quote (a b c)) 1 2) => (b c)
 
 Both one and two arity calls to a list accept negative numbers e.g. 
 
-('(a b c) -1) => -1
-('(a b c) 1 -1) => (b c)
+((quote (a b c)) -1) => -1
+((quote (a b c)) 1 -1) => (b c)
 
 This means cdr would be deifned as (define cdr (lambda (l) (l 1 -1)))
 
@@ -63,4 +63,62 @@ operators are also supported when dealing with primitive applications
 
 (define add-5 (5 +))
 (add-5 5) => 10
+
+
+Special forms:
+
+define - bind a free variable to a value
+set! - mutate a variable
+eq? - are two forms equivelant (eq? (quote x) (quote x)) => #t
+lambda - create a function to be applied (lambda (x) (+ x x)) 
+cons - return a new list containing a new head (cons 1 '(2 3)) => (1 2 3)
+quote - quotes an entire form (quote (+ 2 3)) => (+ 2 3)
+apply - apply a function to a list of args (apply + (quote (2 3))) => 5
+read - reads a string and returns a lisp form (read "(+ 2 3)") => (+ 2 3) 
+expand - expands a form containing macros
+eval - revaluate a lisp form (eval (read "(+ 2 3)")) => 5
+
+type-forms: 
+bool - transmutes things to #t or #f e.g. '() is #f while (1) is true
+
+meta-forms:
+These must be created at the top level and are evaluated before all other forms as they will be used by read and eval
+defmacro - defines a function which manipulates and returns new lisp forms (defmacro x (lambda (y) (quote (+ y y)))) => (x 6) => (+ 6 6)
+defquote - defines a special quote token which read uses to quote forms e.g. (defquote "'" quote) => (read "'(a b)") => (quote (a b))
+defchar - defines a special char the reader should transform 
+defop - an operator macro passes in the left and right hand sides providing an operator the ability to transform statements
+
+(defop ":" (lambda (lhs rhs) `(,@(lhs 0 -2) (key-value-pair ,(lhs -1) ,(rhs 0)) ,@(rhs 1 -1))))
+
+basic runtime
+(define car (lambda (x) (x 0)))
+(define cdr (lambda (x) (x 1 -1)))
+(define not (lambda (x) (x #f #t))) 
+(define and (lambda (x y) (x (y #t #f) #f)))
+(define or (lambda (x y) (x #t (y #t #f))))
+(define pair? (lambda (x) (bool (cdr x)))) 
+(define atom? (lambda (x) (not (pair? x))))
+(define append (lambda (x y) )
+
+(defquote "'" quote)
+(defquote "`" quasiquote)
+(defquote "," unquote)
+(defquote ",@" unquotesplicing)
+(defquote "#" char)
+(defquote ";" comment)
+
+
+(defmacro list (lambda args args))
+
+(define quasiquote (lambda (x) 
+    ((atom? x) 
+      'x 
+      ((eq? (x 0) 'unquote)
+        (x 1)
+        ((and (pair? (x 0)) (eq? ((x 0) 0) 'unquotesplicing))
+          (list 'append ((x 0) 1) (quasiquote (x 1 -1)))
+          ((eq? (x 0) 'quasiquote) 
+            (quasiquote ((quasiquote (x 1 -1)) 1))
+            (list 'cons (quasiquote (x 0)) (quasiquote (x 1 -1)))))))))
+
 
